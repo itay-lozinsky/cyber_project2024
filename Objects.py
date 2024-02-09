@@ -11,3 +11,7 @@ class Enum:
     CONNECT_TO_STUDENT = "connect_to_student"
     DISCONNECT = "disconnect"
     THE_NEXT_FRAME = "the_next_frame"
+    STUDENTS_FOR_TEACHER = "students_for_teacher"
+    ADD_FEEDBACKS = "add_feedbacks"
+    CHECK_IF_FIRST_TIME_CONNECTED = "check_if_first_time_connected"
+    LAST_LESSON = "last_lesson"

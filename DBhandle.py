@@ -19,10 +19,11 @@ c.execute('''
 
 c1.execute('''
     CREATE TABLE IF NOT EXISTS Feedbacks (
-        student_usernames TEXT,
-        teacher_usernames TEXT,
-        verbal_feedbacks TEXT,
-        quantitative_feedbacks INT
+        lesson_number INTEGER,
+        student_username TEXT,
+        teacher_username TEXT,
+        verbal_feedback TEXT,
+        quantitative_feedback INT
     )
 ''')
 
@@ -97,4 +98,42 @@ def list_of_students(check):
         c2.execute(f'''SELECT connected_usernames FROM Messages''')
     else:
         c2.execute(f'''SELECT usernames FROM Messages''')
-    return c2.fetchall()
+    db_info = c2.fetchall()
+    return db_info
+
+
+def add_users_to_feedbacks(student_username, teacher_username):
+    i = 1
+    while i <= 10:
+        c1.execute(f'''INSERT INTO Feedbacks (lesson_number, student_username, teacher_username) VALUES
+        (?, ?, ?) ''', (i, student_username, teacher_username))
+        conn1.commit()
+        i = i+1
+
+
+def list_of_students_for_teacher(teacher_username):
+    c1.execute(f'''SELECT student_username FROM Feedbacks WHERE teacher_username = '{teacher_username}' ''')
+    db_info = c1.fetchall()
+    db_info = list(dict.fromkeys(db_info))
+    return db_info
+
+
+def add_feedbacks(student_username, lesson_number, verbal_feedback, quantitative_feedback):
+    student_username = student_username.replace(")", "")
+    c1.execute(f'''UPDATE Feedbacks SET verbal_feedback = ?, quantitative_feedback = ?
+        WHERE student_username = ? AND lesson_number = ?''', (verbal_feedback, quantitative_feedback, student_username, lesson_number))
+    conn1.commit()
+
+
+def last_lesson(student_username):
+    student_username = student_username.replace(")", "")
+    c1.execute(f'''SELECT lesson_number FROM Feedbacks WHERE student_username = '{student_username}'
+     AND verbal_feedback = '{""}' ''')
+    return c1.fetchone()
+
+
+def check_if_first_time_connected(teacher_username):
+    c1.execute(f'''SELECT * FROM Feedbacks WHERE teacher_username = '{teacher_username}' ''')
+    db_info = c1.fetchone()
+    if db_info:
+        return True

@@ -58,10 +58,29 @@ def handle_client(client_obj):
                 client_obj.send(pickle.dumps(list2))
         elif data[0] == Objects.Enum.DISCONNECT:
             username = data[1]
-            del connected_clients[username]
+            if username in connected_clients.keys():
+                del connected_clients[username]
         elif data[0] == Objects.Enum.THE_NEXT_FRAME:
-            username = data[1]
-            connected_clients[username].send("The Next Frame".encode())
+            student_username = data[1]
+            teacher_username = data[2]
+            #connected_clients[student_username].send("The Next Frame".encode())
+            DBhandle.add_users_to_feedbacks(student_username, teacher_username)
+        elif data[0] == Objects.Enum.STUDENTS_FOR_TEACHER:
+            teacher_username = data[1]
+            client_obj.send(pickle.dumps(DBhandle.list_of_students_for_teacher(teacher_username)))
+        elif data[0] == Objects.Enum.ADD_FEEDBACKS:
+            student_username = data[1]
+            lesson_number = data[2]
+            verbal_feedback = data[3]
+            quantitative_feedback = data[4]
+            DBhandle.add_feedbacks(student_username, lesson_number, verbal_feedback, quantitative_feedback)
+        elif data[0] == Objects.Enum.CHECK_IF_FIRST_TIME_CONNECTED:
+            teacher_username = data[1]
+            client_obj.send(str(DBhandle.check_if_first_time_connected(teacher_username)).encode())
+        elif data[0] == Objects.Enum.LAST_LESSON:
+            student_username = data[1]
+            print(student_username)
+            client_obj.send(DBhandle.last_lesson(student_username).encode())
 
 
 def accept_clients():

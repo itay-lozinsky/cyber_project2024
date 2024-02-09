@@ -2,9 +2,7 @@ import socket
 from tkinter import messagebox
 import Windows
 from Objects import Enum
-import tkinter as tk
 import pickle
-import threading
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect(('localhost', 4444))
@@ -76,7 +74,10 @@ def division_between_clients(user_type, username, self_para):
     if user_type == "Student":
         Windows.JoiningStudentFrame(self_para, username)
     if user_type == "Teacher":
-        Windows.TeacherOptionsFrame(self_para, username)
+        if check_if_first_time_connected(username) == "True":
+            Windows.TeacherFeedbacksFrame(self_para, username)
+        else:
+            Windows.TeacherOptionsFrame(self_para, username)
 
 
 def the_user_is_joined(student_username):
@@ -98,19 +99,20 @@ def list_of_students():
     return check
 
 
-def check_if_connected_and_error(self_para, username):
+def check_if_connected_and_error(self_para, teacher_username, student_username):
     """
     :param self_para: the root object of Tk inter library
-    :param username: represents the student username the teacher chose
+    :param teacher_username: represents the teacher username
+    :param student_username: represents the student username the teacher chose
     :return: None
     """
-    if username == "":
+    if student_username == "":
         messagebox.showerror("Error", "You need to choose a student")
-    elif username not in list_of_students():
+    elif student_username not in list_of_students():
         messagebox.showerror("Error", "This students is not on the options anymore. Please choose another student.")
     else:
-        client_socket.send(f"{Enum.THE_NEXT_FRAME}*{username}".encode())
-        Windows.TeacherFeedbacksFrame(self_para)
+        client_socket.send(f"{Enum.THE_NEXT_FRAME}*{student_username}*{teacher_username}".encode())
+        Windows.TeacherFeedbacksFrame(self_para, teacher_username)
 
 
 def add_to_clients_messages(self_para, answer, student_username):
@@ -134,6 +136,37 @@ def get_the_next_frame(self_para):
     while True:
         if client_socket.recv(1024).decode() == "The Next Frame":
             Windows.StudentFeedbacksFrame(self_para)
+
+
+def list_of_students_for_teacher(teacher_username):
+    client_socket.send(f"{Enum.STUDENTS_FOR_TEACHER}*{teacher_username}".encode())
+    check = pickle.loads(client_socket.recv(1024))
+    check = [item for t in check for item in t]
+    return check
+
+
+def add_feedbacks(student_username, lesson_number, verbal_feedback, quantitative_feedback):
+    if student_username == "":
+        messagebox.showerror("Error", "You need to choose your current student")
+    elif lesson_number == "":
+        messagebox.showerror("Error", "You need to choose the current lesson number")
+    elif verbal_feedback == "":
+        messagebox.showerror("Error", "You need to enter your verbal feedback")
+    elif quantitative_feedback == "":
+        messagebox.showerror("Error", "You need to enter your quantitative feedback")
+    else:
+        client_socket.send(f"{Enum.ADD_FEEDBACKS}"
+        f"*{student_username}*{lesson_number}*{verbal_feedback}*{quantitative_feedback}".encode())
+
+
+def check_if_first_time_connected(teacher_username):
+    client_socket.send(f"{Enum.CHECK_IF_FIRST_TIME_CONNECTED}*{teacher_username}".encode())
+    return client_socket.recv(1024).decode()
+
+
+def last_lesson(student_username):
+    client_socket.send(f"{Enum.LAST_LESSON}*{student_username}".encode())
+    return client_socket.recv(1024).decode()
 
 
 def disconnected_button(username, self_para):

@@ -1,5 +1,6 @@
 import tkinter as tk
 import Client
+import Windows
 
 
 class BaseWindow(tk.Tk):
@@ -105,20 +106,21 @@ class TeacherOptionsFrame(tk.Frame):
     """
     creates the teacher options frame. In this frame the teacher choose his students
     """
-    def __init__(self, master, username):
+    def __init__(self, master, teacher_username):
         super().__init__(master)
         master.winfo_children()[0].destroy()
         self.pack()
 
         lbl_num = tk.Label(self, text="Please choose your student:", height=3, font=("Ariel Bold", 20))
         lbl_num.pack(side="top")
+
         check = Client.list_of_students()
         if check:
             clicked = tk.StringVar()
             type_option = tk.OptionMenu(self, clicked, *check)
             type_option.pack()
             btn_click = tk.Button(self, text="Enter", height=3, font=("Ariel Black", 15), width=10, command=lambda:
-            Client.check_if_connected_and_error(master, clicked.get()))
+            Client.check_if_connected_and_error(master, teacher_username, clicked.get()))
             btn_click.pack()
 
         else:
@@ -138,10 +140,51 @@ class StudentFeedbacksFrame(tk.Frame):
 
 
 class TeacherFeedbacksFrame(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, teacher_username):
         super().__init__(master)
         master.winfo_children()[0].destroy()
         self.pack()
 
-        lbl_num = tk.Label(self, text="BYE", height=3, font=("Ariel Bold", 20))
+        btn_click = tk.Button(self, text="Disconnect", height=3, font=("Ariel Black", 15), width=10, command=lambda:
+        Client.disconnected_button(teacher_username, master))
+        btn_click.pack(side="top")
+
+        btn_click = tk.Button(self, text="Add Student", height=3, font=("Ariel Black", 15), width=10, command=lambda:
+        TeacherOptionsFrame(master, teacher_username))
+        btn_click.pack(side="top")
+
+        lbl_num = tk.Label(self, text=f"Hello {teacher_username}! "
+        f"Please choose your current student:", height=3, font=("Ariel Bold", 20))
         lbl_num.pack(side="top")
+
+        check = Client.list_of_students_for_teacher(teacher_username)
+        clicked = tk.StringVar()
+        type_option = tk.OptionMenu(self, clicked, *check)
+        type_option.pack()
+
+        last_lesson = Client.last_lesson(clicked.get())
+        lbl_num = tk.Label(self, text=f"The last lesson you entered is: {last_lesson}", height=3, font=("Ariel Bold", 20))
+        lbl_num.pack(side="top")
+
+        lbl_num = tk.Label(self, text="Please choose the lesson number", height=3, font=("Ariel Bold", 20))
+        lbl_num.pack(side="top")
+
+        lesson_number = tk.StringVar()
+        one_to_ten = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        type_option = tk.OptionMenu(self, lesson_number, *one_to_ten)
+        type_option.pack()
+
+        lbl_num = tk.Label(self, text="Please enter your verbal & quantitative feedback", height=3, font=("Ariel Bold", 20))
+        lbl_num.pack(side="top")
+
+        quantitative_feedback = tk.StringVar()
+        type_option = tk.OptionMenu(self, quantitative_feedback, *one_to_ten)
+        type_option.pack()
+
+        verbal_feedback = tk.Entry(self)
+        verbal_feedback.pack(side="top")
+
+        btn_click = tk.Button(self, text="Enter", height=3, font=("Ariel Black", 15), width=10, command=lambda:
+        Client.add_feedbacks(clicked.get(), lesson_number.get(), verbal_feedback.get(), quantitative_feedback.get()))
+        btn_click.pack()
+
