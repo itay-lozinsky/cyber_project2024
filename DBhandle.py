@@ -78,6 +78,8 @@ def is_joined(student_username):
     db_info = c2.fetchone()
     if db_info:
         return True
+    else:
+        return False
 
 
 def add_student(yes_or_no, username):
@@ -94,21 +96,23 @@ def list_of_students(check):
     2 for getting the list of all the student who joined the system
     :return:
     """
+    db_info = 0
     if check == 1:
         c2.execute(f'''SELECT connected_usernames FROM Messages''')
-    else:
+        db_info = c2.fetchall()
+    elif check == 2:
         c2.execute(f'''SELECT usernames FROM Messages''')
-    db_info = c2.fetchall()
+        db_info = c2.fetchall()
+    elif check == 3:
+        c1.execute(f'''SELECT student_username FROM Feedbacks''')
+        db_info = c1.fetchall()
     return db_info
 
 
 def add_users_to_feedbacks(student_username, teacher_username):
-    i = 1
-    while i <= 10:
-        c1.execute(f'''INSERT INTO Feedbacks (lesson_number, student_username, teacher_username) VALUES
-        (?, ?, ?) ''', (i, student_username, teacher_username))
-        conn1.commit()
-        i = i+1
+    c1.execute(f'''INSERT INTO Feedbacks (lesson_number, student_username, teacher_username) VALUES
+    (?, ?, ?) ''', (1, student_username, teacher_username))
+    conn1.commit()
 
 
 def list_of_students_for_teacher(teacher_username):
@@ -125,15 +129,34 @@ def add_feedbacks(student_username, lesson_number, verbal_feedback, quantitative
     conn1.commit()
 
 
+def how_much_lessons(student_username):
+    c1.execute(f'''SELECT lesson_number FROM Feedbacks WHERE student_username = '{student_username}' ''')
+    db_info = c1.fetchall()
+    db_info = [item for t in db_info for item in t]
+    return max(db_info)
+
+
+def add_lesson(student_username, teacher_username):
+    c1.execute(f'''INSERT INTO Feedbacks (lesson_number, student_username, teacher_username) VALUES
+    (?, ?, ?) ''', (how_much_lessons(student_username)+1, student_username, teacher_username))
+
+
 def last_lesson(student_username):
     student_username = student_username.replace(")", "")
-    c1.execute(f'''SELECT lesson_number FROM Feedbacks WHERE student_username = '{student_username}'
-     AND verbal_feedback = '{""}' ''')
-    return c1.fetchone()
+    return "hey"
 
 
-def check_if_first_time_connected(teacher_username):
-    c1.execute(f'''SELECT * FROM Feedbacks WHERE teacher_username = '{teacher_username}' ''')
+def check_if_first_time_connected(username):
+    c1.execute(f'''SELECT * FROM Feedbacks WHERE teacher_username = '{username}'
+    OR student_username = '{username}' ''')
     db_info = c1.fetchone()
     if db_info:
         return True
+    else:
+        return False
+
+
+def list_of_students_in_feedbacks():
+    c1.execute(f'''SELECT student_username FROM Feedbacks ''')
+    db_info = c1.fetchall()
+    return db_info

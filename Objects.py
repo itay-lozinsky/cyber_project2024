@@ -15,3 +15,5 @@ class Enum:
     ADD_FEEDBACKS = "add_feedbacks"
     CHECK_IF_FIRST_TIME_CONNECTED = "check_if_first_time_connected"
     LAST_LESSON = "last_lesson"
+    ADD_LESSON = "add_lesson"
+    HOW_MUCH_LESSONS = "how_much_lessons"
