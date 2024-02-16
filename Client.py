@@ -130,9 +130,7 @@ def add_to_clients_messages(self1, self_para, answer, student_username):
         client_socket.send(f"{Enum.YES}*{student_username}".encode())
     else:
         client_socket.send(f"{Enum.NO}*{student_username}".encode())
-    self1.btn_click1.pack_forget()
-    self1.btn_click.pack_forget()
-    self1.lbl_num.pack_forget()
+    Windows.JoiningStudentFrame(self_para, student_username)
 
     threading.Thread(target=get_the_next_frame, args=(self_para,)).start()
 
