@@ -99,7 +99,6 @@ def list_of_students():
     """
     client_socket.send(f"{Enum.STUDENT_LIST}".encode())
     check = pickle.loads(client_socket.recv(1024))
-    check = [item for t in check for item in t]
     return check
 
 
@@ -119,7 +118,7 @@ def check_if_connected_and_error(self_para, teacher_username, student_username):
         Windows.TeacherFeedbacksFrame(self_para, teacher_username)
 
 
-def add_to_clients_messages(self1, self_para, answer, student_username):
+def add_to_clients_messages(self_para, answer, student_username):
     """
     :param self_para: gh
     :param answer: represents if the client want to hide his account while disconnected
@@ -132,15 +131,16 @@ def add_to_clients_messages(self1, self_para, answer, student_username):
         client_socket.send(f"{Enum.NO}*{student_username}".encode())
     Windows.JoiningStudentFrame(self_para, student_username)
 
-    threading.Thread(target=get_the_next_frame, args=(self_para,)).start()
-
 
 def get_the_next_frame(self_para):
-    moshe = ""
-    moshe1 = "The Next Frame"
-    while moshe != moshe1:
-        moshe = client_socket.recv(1024).decode()
+    template = ""
+    text_message = "The Next Frame"
+    while template != text_message:
+        template = client_socket.recv(1024).decode()
     Windows.StudentFeedbacksFrame(self_para)
+
+def number_of_lessons(self_para, student_username):
+    return  "hey"
 
 
 def list_of_students_for_teacher(teacher_username):

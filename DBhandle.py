@@ -106,6 +106,7 @@ def list_of_students(check):
     elif check == 3:
         c1.execute(f'''SELECT student_username FROM Feedbacks''')
         db_info = c1.fetchall()
+    db_info = [item for t in db_info for item in t]
     return db_info
 
 

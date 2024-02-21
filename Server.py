@@ -50,18 +50,19 @@ def handle_client(client_obj):
             list1 = DBhandle.list_of_students(1)
             list2 = DBhandle.list_of_students(2)
             list3 = DBhandle.list_of_students(3)
-            list1 = [item for t in list1 for item in t]
-            list3 = [item for t in list3 for item in t]
+            #list1 = [item for t in list1 for item in t]
+            #list3 = [item for t in list3 for item in t]
             check = [e for e in connected_clients.keys() if e in list1]
-            print(list3)
-            if check:
-                result = check + list2
-                result = [e for e in list3 if e not in result]
-                client_obj.send(pickle.dumps(result))
-            else:
-                result = list2
-                result = [e for e in list3 if e not in result]
-                client_obj.send(pickle.dumps(result))
+            print(check)
+            result = check + list2
+            print(result)
+            result = [e for e in result if e not in list3 and e is not None]
+            print(result)
+            client_obj.send(pickle.dumps(result))
+            #else:
+                #result = list2
+                #result = [e for e in result if e[0] not in list3 and e[0] is not None]
+                #client_obj.send(pickle.dumps(result))
         elif data[0] == Objects.Enum.DISCONNECT:
             username = data[1]
             if username in connected_clients.keys():

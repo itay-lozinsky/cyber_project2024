@@ -95,11 +95,11 @@ class JoiningStudentFrame(tk.Frame):
             self.lbl_num.pack(side="top")
 
             self.btn_click = tk.Button(self, text="Yes", height=3, font=("Ariel Black", 15), width=10, command=lambda: Client.
-                                  add_to_clients_messages(self, master, True, username))
+                                  add_to_clients_messages(master, True, username))
             self.btn_click.pack()
 
             self.btn_click1 = tk.Button(self, text="No", height=3, font=("Ariel Black", 15), width=10, command= lambda: Client.
-                                  add_to_clients_messages(self, master, False, username))
+                                  add_to_clients_messages(master, False, username))
             self.btn_click1.pack()
 
             lbl_num1 = tk.Label(self, text=f"After you choose, \n"
@@ -194,17 +194,13 @@ class TeacherFeedbacksFrame(tk.Frame):
         type_option = tk.OptionMenu(self, clicked, *check)
         type_option.pack()
 
+        threading.Thread(target=Client.get_the_next_frame, args=(master, clicked.get())).start()
+
         lbl_num = tk.Label(self, text="Please choose the lesson number", height=3, font=("Ariel Bold", 20))
         lbl_num.pack(side="top")
 
         lesson_number = tk.StringVar()
-        count = Client.how_much_lessons(clicked.get())
-        li = [0]
-        i=0
-        while i != count:
-            li = li.insert(i)
-            i=i+1
-        type_option = tk.OptionMenu(self, lesson_number, *li)
+        type_option = tk.OptionMenu(self, lesson_number, Client.how_much_lessons(clicked.get()))
         type_option.pack()
 
         lbl_num = tk.Label(self, text="Please enter your verbal & quantitative feedback", height=3, font=("Ariel Bold", 20))
