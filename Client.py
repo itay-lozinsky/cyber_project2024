@@ -188,6 +188,7 @@ def last_lesson(student_username):
 
 
 def disconnect_button(username, self_para):
+    messagebox.showinfo("Excellent", "You have successfully disconnected from the system")
     client_socket.send(f"{Enum.DISCONNECT}*{username}".encode())
     #client_socket.close()
 

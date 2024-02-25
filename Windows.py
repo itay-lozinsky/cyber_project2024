@@ -136,7 +136,8 @@ class TeacherOptionsFrame(tk.Frame):
             TeacherFeedbacksFrame(master, teacher_username))
             btn_click.pack(side="top")
 
-        lbl_num = tk.Label(self, text="Please choose your student:", height=3, font=("Ariel Bold", 20))
+        lbl_num = tk.Label(self, text=f"Welcome {teacher_username}!"
+                                      f" Please choose your student:", height=3, font=("Ariel Bold", 20))
         lbl_num.pack(side="top")
 
         check = Client.list_of_students()
@@ -171,7 +172,7 @@ class StudentFeedbacksFrame(tk.Frame):
                                       f" Please choose the lesson number you \n want to get feedback on", height=3, font=("Ariel Bold", 20))
         lbl_num.pack(side="top")
 
-        check = list(range(1, Client.how_much_lessons(student_username)+1)) ***
+        check = list(range(1, Client.how_much_lessons(student_username)+1))
         self.chosen_lesson_number = tk.StringVar(self)
         type_option = tk.OptionMenu(self, self.chosen_lesson_number, *check)
         type_option.pack()

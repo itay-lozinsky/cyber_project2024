@@ -66,7 +66,7 @@ def handle_client(client_obj):
             DBhandle.add_users_to_feedbacks(student_username, teacher_username)
         elif data[0] == Objects.Enum.STUDENTS_FOR_TEACHER:
             teacher_username = data[1]
-            client_obj.send(pickle.dumps(DBhandle.list_of_students_for_teacher(teacher_username)))
+            client_obj.send(pickle.dumps(DBhandle.list_of_students_per_teacher(teacher_username)))
         elif data[0] == Objects.Enum.ADD_FEEDBACKS:
             student_username = data[1]
             lesson_number = data[2]

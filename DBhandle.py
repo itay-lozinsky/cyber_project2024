@@ -116,10 +116,10 @@ def add_users_to_feedbacks(student_username, teacher_username):
     conn1.commit()
 
 
-def list_of_students_for_teacher(teacher_username):
+def list_of_students_per_teacher(teacher_username):
     c1.execute(f'''SELECT student_username FROM Feedbacks WHERE teacher_username = '{teacher_username}' ''')
     db_info = c1.fetchall()
-    db_info = list(dict.fromkeys(db_info))
+    #db_info = list(dict.fromkeys(db_info))
     return db_info
 
 
@@ -171,9 +171,9 @@ def feedback_per_lesson(student_username, lesson_number):
         return f"No Data"
     else:
         verbal = [item for t in verbal for item in t]
-        quantitative = str(quantitative)
         verbal = ''.join(verbal)
-        return verbal+","+quantitative[1]
+        quantitative = str(quantitative)
+        return verbal+", "+quantitative[1]
 
 
 def list_of_students_in_feedbacks():
