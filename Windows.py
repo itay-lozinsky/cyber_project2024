@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
-
+from tkinter import *
 import Client
-import Windows
 import threading
+
 
 class BaseWindow(tk.Tk):
     """
@@ -79,27 +79,27 @@ class JoiningStudentFrame(tk.Frame):
     """
     creates the joining student frame. In this frame the student choose if he wants to hide his account while disconnected
     """
-    def __init__(self, master, username):
+    def __init__(self, master, student_username):
         super().__init__(master)
         master.winfo_children()[0].destroy()
         self.pack()
 
         btn_click = tk.Button(self, text="Disconnect", height=3, font=("Ariel Black", 15), width=10, command=lambda: Client.
-                              disconnect_button(username, master))
+                              disconnect_button(student_username, master))
         btn_click.pack()
 
-        if Client.the_user_is_joined(username) == "False":
+        if Client.the_user_is_joined(student_username) == "False":
 
-            self.lbl_num = tk.Label(self, text=f"Welcome {username}! Do you want to hide your account \n "
+            self.lbl_num = tk.Label(self, text=f"Welcome {student_username}! Do you want to hide your account \n "
                                           f"while you are disconnected?", height=3, font=("Ariel Bold", 20))
             self.lbl_num.pack(side="top")
 
             self.btn_click = tk.Button(self, text="Yes", height=3, font=("Ariel Black", 15), width=10, command=lambda: Client.
-                                  add_to_clients_messages(master, True, username))
+                                       add_to_clients_messages(master, True, student_username))
             self.btn_click.pack()
 
             self.btn_click1 = tk.Button(self, text="No", height=3, font=("Ariel Black", 15), width=10, command= lambda: Client.
-                                  add_to_clients_messages(master, False, username))
+                                        add_to_clients_messages(master, False, student_username))
             self.btn_click1.pack()
 
             lbl_num1 = tk.Label(self, text=f"After you choose, \n"
@@ -108,7 +108,7 @@ class JoiningStudentFrame(tk.Frame):
             lbl_num1.pack()
 
         else:
-            threading.Thread(target=Client.get_the_next_frame, args=(master,)).start()
+            threading.Thread(target=Client.get_the_next_frame, args=(master, student_username)).start()
 
             lbl_num = tk.Label(self, text=f"Thanks! Please wait until the teacher connects with you, \n"
                                           f" Meanwhile you can disconnect.", height=3,
@@ -156,17 +156,60 @@ class TeacherOptionsFrame(tk.Frame):
 
 
 class StudentFeedbacksFrame(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, student_username):
         super().__init__(master)
         master.winfo_children()[0].destroy()
         self.pack()
 
-        lbl_num = tk.Label(self, text="HEY", height=3, font=("Ariel Bold", 20))
+        disconnect_button(student_username, self)
+
+        btn_click = tk.Button(self, text="Refresh", height=3, font=("Ariel Black", 15), width=10, command=lambda:
+        StudentFeedbacksFrame(self, student_username))
+        btn_click.pack(side="top")
+
+        lbl_num = tk.Label(self, text=f"Hello {student_username}!"
+                                      f" Please choose the lesson number you \n want to get feedback on", height=3, font=("Ariel Bold", 20))
         lbl_num.pack(side="top")
+
+        check = list(range(1, Client.how_much_lessons(student_username)+1)) ***
+        self.chosen_lesson_number = tk.StringVar(self)
+        type_option = tk.OptionMenu(self, self.chosen_lesson_number, *check)
+        type_option.pack()
+
+        btn_click = tk.Button(self, text="Enter", height=3, font=("Ariel Black", 15), width=10, command=lambda:
+        self.enter())
+        btn_click.pack()
+
+        self.feedback_text = Text(width=80, height=100)
+        self.feedback_text.pack()
+        self.feedback_text.config(state="disabled")
+        self.moshe = student_username
+
+    def enter(self):
+        self.feedback_text.config(state="normal")
+        lesson_number = self.chosen_lesson_number.get()
+        feedback_text_content = Client.feedbacks_per_lesson(self.moshe, lesson_number)
+
+        if feedback_text_content == "No Data":
+            message = f"No feedback available yet for lesson number {lesson_number}\n"
+        else:
+            message = f"Teacher's feedback for lesson number {lesson_number}: {feedback_text_content}\n"
+
+        self.feedback_text.insert(tk.END, message)
+        self.feedback_text.config(state="disabled")
 
 
 class TeacherFeedbacksFrame(tk.Frame):
+    def last1(self, *args):
+        student_username = self.clicked.get()
+        options = list(range(1, Client.how_much_lessons(student_username)+1))
+        self.lesson_number.set("")
+        self.type_option2["menu"].delete(0, "end")
+        for option in options:
+            self.type_option2["menu"].add_command(label=option, command=tk._setit(self.lesson_number, option))
+
     def __init__(self, master, teacher_username):
+
         super().__init__(master)
         master.winfo_children()[0].destroy()
         self.pack()
@@ -178,7 +221,7 @@ class TeacherFeedbacksFrame(tk.Frame):
         btn_click.pack(side="top")
 
         btn_click = tk.Button(self, text="Add Lesson", height=3, font=("Ariel Black", 15), width=10, command=lambda:
-        Client.add_lesson(master, clicked.get(), teacher_username))
+        Client.add_lesson(self, self.clicked.get(), teacher_username))
         btn_click.pack(side="top")
 
         btn_click = tk.Button(self, text="Last Lesson", height=3, font=("Ariel Black", 15), width=10, command=lambda:
@@ -190,18 +233,17 @@ class TeacherFeedbacksFrame(tk.Frame):
         lbl_num.pack(side="top")
 
         check = Client.list_of_students_for_teacher(teacher_username)
-        clicked = tk.StringVar()
-        type_option = tk.OptionMenu(self, clicked, *check)
-        type_option.pack()
-
-        threading.Thread(target=Client.get_the_next_frame, args=(master, clicked.get())).start()
+        self.clicked = tk.StringVar(self)
+        self.type_option = tk.OptionMenu(self, self.clicked, *check)
+        self.type_option.pack()
+        self.clicked.trace_add("write", self.last1)
 
         lbl_num = tk.Label(self, text="Please choose the lesson number", height=3, font=("Ariel Bold", 20))
         lbl_num.pack(side="top")
 
-        lesson_number = tk.StringVar()
-        type_option = tk.OptionMenu(self, lesson_number, Client.how_much_lessons(clicked.get()))
-        type_option.pack()
+        self.lesson_number = tk.StringVar(self)
+        self.type_option2 = tk.OptionMenu(self, self.lesson_number, "")
+        self.type_option2.pack()
 
         lbl_num = tk.Label(self, text="Please enter your verbal & quantitative feedback", height=3, font=("Ariel Bold", 20))
         lbl_num.pack(side="top")
@@ -215,15 +257,15 @@ class TeacherFeedbacksFrame(tk.Frame):
         verbal_feedback.pack(side="top")
 
         btn_click = tk.Button(self, text="Enter", height=3, font=("Ariel Black", 15), width=10, command=lambda:
-        Client.add_feedbacks(clicked.get(), lesson_number.get(), verbal_feedback.get(), quantitative_feedback.get()))
+        Client.add_feedbacks(self.clicked.get(), self.lesson_number.get(), verbal_feedback.get(), quantitative_feedback.get()))
         btn_click.pack()
 
         def last():
-            if clicked.get() == "":
+            if self.clicked.get() == "":
                 messagebox.showerror("Error", "Please choose a student")
             else:
                 if not hasattr(last, 'label_created'):
-                    last_lesson = Client.last_lesson(clicked.get())
+                    last_lesson = Client.last_lesson(self.clicked.get())
                     lbl_num = tk.Label(self, text=f"The last lesson you entered is: {last_lesson}", height=3,
                                        font=("Ariel Bold", 20))
                     lbl_num.pack(side="top")

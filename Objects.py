@@ -17,3 +17,4 @@ class Enum:
     LAST_LESSON = "last_lesson"
     ADD_LESSON = "add_lesson"
     HOW_MUCH_LESSONS = "how_much_lessons"
+    FEEDBACKS_PER_LESSON = "feedbacks_per_lesson"

@@ -56,6 +56,7 @@ def login_check(username_entry, password_entry, self_para):
     answer = client_socket.recv(1024).decode()
 
     if answer == "Student" or answer == "Teacher" or answer == "Friend:":
+        messagebox.showinfo("Excellent!", "You have been successfully logged in")
         division_between_clients(answer, username, self_para)
     elif answer == "user doesnt exist":
         messagebox.showerror("False details", "User doesn't exist")
@@ -74,7 +75,7 @@ def division_between_clients(user_type, username, self_para):
     """
     if user_type == "Student":
         if check_if_first_time_connected(username) == "True":
-            Windows.StudentFeedbacksFrame(self_para)
+            Windows.StudentFeedbacksFrame(self_para, username)
         else:
             Windows.JoiningStudentFrame(self_para, username)
     if user_type == "Teacher":
@@ -132,15 +133,12 @@ def add_to_clients_messages(self_para, answer, student_username):
     Windows.JoiningStudentFrame(self_para, student_username)
 
 
-def get_the_next_frame(self_para):
+def get_the_next_frame(self_para, student_username):
     template = ""
     text_message = "The Next Frame"
     while template != text_message:
         template = client_socket.recv(1024).decode()
-    Windows.StudentFeedbacksFrame(self_para)
-
-def number_of_lessons(self_para, student_username):
-    return  "hey"
+    Windows.StudentFeedbacksFrame(self_para, student_username)
 
 
 def list_of_students_for_teacher(teacher_username):
@@ -169,19 +167,19 @@ def check_if_first_time_connected(teacher_username):
     return client_socket.recv(1024).decode()
 
 
-def add_lesson(master, student_username, teacher_username):
+def add_lesson(self_para, student_username, teacher_username):
     if student_username == "":
         messagebox.showerror("Error", "You need to choose a student")
     else:
         client_socket.send(f"{Enum.ADD_LESSON}*{student_username}*{teacher_username}".encode())
-        Windows.TeacherFeedbacksFrame(master, teacher_username)
+        self_para.last1()
 
 
 def how_much_lessons(student_username):
     if student_username == "":
-        return 0
+        return []
     client_socket.send(f"{Enum.HOW_MUCH_LESSONS}*{student_username}".encode())
-    return client_socket.recv(1024).decode()
+    return pickle.loads(client_socket.recv(1024))
 
 
 def last_lesson(student_username):
@@ -190,9 +188,13 @@ def last_lesson(student_username):
 
 
 def disconnect_button(username, self_para):
-    self_para.destroy()
-    Windows.LoginWindow()
     client_socket.send(f"{Enum.DISCONNECT}*{username}".encode())
+    #client_socket.close()
+
+
+def feedbacks_per_lesson(student_username, lesson_number):
+    client_socket.send(f"{Enum.FEEDBACKS_PER_LESSON}*{student_username}*{lesson_number}".encode())
+    return client_socket.recv(1024).decode()
 
 
 if __name__ == "__main__":

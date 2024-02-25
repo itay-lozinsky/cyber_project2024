@@ -124,7 +124,6 @@ def list_of_students_for_teacher(teacher_username):
 
 
 def add_feedbacks(student_username, lesson_number, verbal_feedback, quantitative_feedback):
-    student_username = student_username.replace(")", "")
     c1.execute(f'''UPDATE Feedbacks SET verbal_feedback = ?, quantitative_feedback = ?
         WHERE student_username = ? AND lesson_number = ?''', (verbal_feedback, quantitative_feedback, student_username, lesson_number))
     conn1.commit()
@@ -143,8 +142,12 @@ def add_lesson(student_username, teacher_username):
 
 
 def last_lesson(student_username):
-    student_username = student_username.replace(")", "")
-    return "hey"
+    c1.execute(f'''SELECT lesson_number FROM Feedbacks WHERE student_username = ? AND quantitative_feedback = ? ''', (student_username, None))
+    db_info = c1.fetchall()
+    db_info = [item for t in db_info for item in t]
+    if len(db_info) == 1:
+        return "---"
+    return db_info
 
 
 def check_if_first_time_connected(username):
@@ -155,6 +158,22 @@ def check_if_first_time_connected(username):
         return True
     else:
         return False
+
+
+def feedback_per_lesson(student_username, lesson_number):
+    c1.execute(f'''SELECT verbal_feedback FROM Feedbacks WHERE student_username = '{student_username}'
+     AND lesson_number = '{lesson_number}' ''')
+    verbal = c1.fetchone()
+    c1.execute(f'''SELECT quantitative_feedback FROM Feedbacks WHERE student_username = '{student_username}'
+     AND lesson_number = '{lesson_number}' ''')
+    quantitative = c1.fetchone()
+    if verbal[0] is None:
+        return f"No Data"
+    else:
+        verbal = [item for t in verbal for item in t]
+        quantitative = str(quantitative)
+        verbal = ''.join(verbal)
+        return verbal+","+quantitative[1]
 
 
 def list_of_students_in_feedbacks():
