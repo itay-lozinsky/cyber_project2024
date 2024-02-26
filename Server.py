@@ -78,6 +78,7 @@ def handle_client(client_obj):
             client_obj.send(str(DBhandle.check_if_first_time_connected(teacher_username)).encode())
         elif data[0] == Objects.Enum.LAST_LESSON:
             student_username = data[1]
+            print(DBhandle.last_lesson(student_username))
             client_obj.send("hey".encode())
         elif data[0] == Objects.Enum.ADD_LESSON:
             student_username = data[1]

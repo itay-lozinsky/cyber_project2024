@@ -142,12 +142,12 @@ def add_lesson(student_username, teacher_username):
 
 
 def last_lesson(student_username):
-    c1.execute(f'''SELECT lesson_number FROM Feedbacks WHERE student_username = ? AND quantitative_feedback = ? ''', (student_username, None))
+    c1.execute(f'''SELECT lesson_number FROM Feedbacks WHERE student_username = ? AND quantitative_feedback = ? ''', (student_username, ""))
     db_info = c1.fetchall()
     db_info = [item for t in db_info for item in t]
     if len(db_info) == 1:
-        return "---"
-    return db_info
+        return db_info[1]
+    return max(db_info)
 
 
 def check_if_first_time_connected(username):

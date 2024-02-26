@@ -164,22 +164,22 @@ class StudentFeedbacksFrame(tk.Frame):
 
         disconnect_button(student_username, self)
 
-        btn_click = tk.Button(self, text="Refresh", height=3, font=("Ariel Black", 15), width=10, command=lambda:
-        StudentFeedbacksFrame(self, student_username))
-        btn_click.pack(side="top")
+        self.btn_click = tk.Button(self, text="Refresh", height=3, font=("Ariel Black", 15), width=10, command=lambda:
+        StudentFeedbacksFrame(master, student_username))
+        self.btn_click.pack(side="top")
 
-        lbl_num = tk.Label(self, text=f"Hello {student_username}!"
+        self.lbl_num = tk.Label(self, text=f"Hello {student_username}!"
                                       f" Please choose the lesson number you \n want to get feedback on", height=3, font=("Ariel Bold", 20))
-        lbl_num.pack(side="top")
+        self.lbl_num.pack(side="top")
 
-        check = list(range(1, Client.how_much_lessons(student_username)+1))
+        self.check = list(range(1, Client.how_much_lessons(student_username)+1))
         self.chosen_lesson_number = tk.StringVar(self)
-        type_option = tk.OptionMenu(self, self.chosen_lesson_number, *check)
-        type_option.pack()
+        self.type_option = tk.OptionMenu(self, self.chosen_lesson_number, *self.check)
+        self.type_option.pack()
 
-        btn_click = tk.Button(self, text="Enter", height=3, font=("Ariel Black", 15), width=10, command=lambda:
+        self.btn_click = tk.Button(self, text="Enter", height=3, font=("Ariel Black", 15), width=10, command=lambda:
         self.enter())
-        btn_click.pack()
+        self.btn_click.pack()
 
         self.feedback_text = Text(width=80, height=100)
         self.feedback_text.pack()
@@ -188,13 +188,13 @@ class StudentFeedbacksFrame(tk.Frame):
 
     def enter(self):
         self.feedback_text.config(state="normal")
-        lesson_number = self.chosen_lesson_number.get()
-        feedback_text_content = Client.feedbacks_per_lesson(self.moshe, lesson_number)
+        self.lesson_number = self.chosen_lesson_number.get()
+        self.feedback_text_content = Client.feedbacks_per_lesson(self.moshe, self.lesson_number)
 
-        if feedback_text_content == "No Data":
-            message = f"No feedback available yet for lesson number {lesson_number}\n"
+        if self.feedback_text_content == "No Data":
+            message = f"No feedback available yet for lesson number {self.lesson_number}\n"
         else:
-            message = f"Teacher's feedback for lesson number {lesson_number}: {feedback_text_content}\n"
+            message = f"Teacher's feedback for lesson number {self.lesson_number}: {self.feedback_text_content}\n"
 
         self.feedback_text.insert(tk.END, message)
         self.feedback_text.config(state="disabled")
