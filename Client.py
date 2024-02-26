@@ -52,18 +52,19 @@ def login_check(username_entry, password_entry, self_para):
     if username == "" or password == "":
         messagebox.showerror("Error", "You need to enter your details.")
 
-    client_socket.send(f"{Enum.CONNECTING}*{username}*{password}".encode())
-    answer = client_socket.recv(1024).decode()
-
-    if answer == "Student" or answer == "Teacher" or answer == "Friend:":
-        messagebox.showinfo("Excellent!", "You have been successfully logged in")
-        division_between_clients(answer, username, self_para)
-    elif answer == "user doesnt exist":
-        messagebox.showerror("False details", "User doesn't exist")
     else:
-        messagebox.showerror("False Details", "Your password is wrong. Please try again")
-        username_entry.delete(0, "end")
-        password_entry.delete(0, "end")
+        client_socket.send(f"{Enum.CONNECTING}*{username}*{password}".encode())
+        answer = client_socket.recv(1024).decode()
+
+        if answer == "Student" or answer == "Teacher" or answer == "Friend:":
+            messagebox.showinfo("Excellent!", "You have been successfully logged in")
+            division_between_clients(answer, username, self_para)
+        elif answer == "user doesnt exist":
+            messagebox.showerror("False details", "User doesn't exist")
+        else:
+            messagebox.showerror("False Details", "Your password is wrong. Please try again")
+            username_entry.delete(0, "end")
+            password_entry.delete(0, "end")
 
 
 def division_between_clients(user_type, username, self_para):
@@ -83,6 +84,8 @@ def division_between_clients(user_type, username, self_para):
             Windows.TeacherFeedbacksFrame(self_para, username)
         else:
             Windows.TeacherOptionsFrame(self_para, username)
+    if user_type == "Friend":
+
 
 
 def the_user_is_joined(student_username):
@@ -133,12 +136,25 @@ def add_to_clients_messages(self_para, answer, student_username):
     Windows.JoiningStudentFrame(self_para, student_username)
 
 
-def get_the_next_frame(self_para, student_username):
+def get_the_next_frame(self_para, username, text_message):
     template = ""
-    text_message = "The Next Frame"
+    #text_message = "The Next Frame"
     while template != text_message:
         template = client_socket.recv(1024).decode()
-    Windows.StudentFeedbacksFrame(self_para, student_username)
+    if text_message == "The Next Frame":
+        Windows.StudentFeedbacksFrame(self_para, username)
+    else:
+        self.feedback_text.config(state="normal")
+        return client_socket.recv(1024).decode()
+        self.feedback_text_content = Client.feedbacks_per_lesson(self.moshe, self.lesson_number)
+
+        if self.feedback_text_content == "No Data":
+            message = f"No feedback available yet for lesson number {self.lesson_number}\n"
+        else:
+            message = f"Teacher's feedback for lesson number {self.lesson_number}: {self.feedback_text_content}\n"
+
+        self.feedback_text.insert(tk.END, message)
+        self.feedback_text.config(state="disabled")
 
 
 def list_of_students_for_teacher(teacher_username):
@@ -186,6 +202,11 @@ def last_lesson(student_username):
     client_socket.send(f"{Enum.LAST_LESSON}*{student_username}".encode())
     return client_socket.recv(1024).decode()
 
+def friend_list():
+    client_socket.send(f"{Enum.FRIEND_LIST}".encode())
+    check = pickle.loads(client_socket.recv(1024))
+    return check
+
 
 def disconnect_button(username, self_para):
     messagebox.showinfo("Excellent", "You have successfully disconnected from the system")
@@ -196,6 +217,14 @@ def disconnect_button(username, self_para):
 def feedbacks_per_lesson(student_username, lesson_number):
     client_socket.send(f"{Enum.FEEDBACKS_PER_LESSON}*{student_username}*{lesson_number}".encode())
     return client_socket.recv(1024).decode()
+
+def share_feedback_with_friend(lesson_number, student_username, friend_username):
+    if friend_username.get() == "" or lesson_number.get() == "":
+        messagebox.showerror("Error", "Please enter the details.")
+    elif friend_username not in friend_list():
+        messagebox.showerror("Error", "Your friend is not connected anymore. Please try again later.")
+    else:
+        client_socket.send(f"{Enum.SHARE_FEEDBACK_WITH_FRIEND}*{lesson_number.get()}*{student_username}*{friend_username.get()}".encode())
 
 
 if __name__ == "__main__":

@@ -13,34 +13,31 @@ class BaseWindow(tk.Tk):
         super().__init__()
         self.title(f'{title}')
         self.geometry(f'{width}x{height}')
+        self.configure(bg='#3498db')  # Set background color to a shade of blue
 
 
 class LoginWindow(BaseWindow):
-    """
-    creates the GUI window & the login frame
-    """
     def __init__(self):
         super().__init__("Driving Lessons System")
-        login_frame = tk.Frame(self)
 
-        login_frame.pack()
-        lbl_num = tk.Label(login_frame, text="User Name:", height=3, font=("Ariel Bold", 20))
-        lbl_num.pack(side="top")
+        login_frame = tk.Frame(self, bg='#3498db')  # Set frame background color
+        login_frame.pack(padx=20, pady=20)
 
-        username = tk.Entry(login_frame)
-        username.pack(side="top")
+        label_font_size = 16
+        entry_font_size = 14
+        button_font_size = 14
 
-        lbl_num = tk.Label(login_frame, text="Password:", height=3, font=("Ariel Bold", 20))
-        lbl_num.pack(side="top")
+        tk.Label(login_frame, text="User Name:", font=("Arial Bold", label_font_size), bg='#3498db', fg='white').pack(side="top")
+        username_entry = tk.Entry(login_frame, font=("Arial", entry_font_size))
+        username_entry.pack(side="top", pady=5)
 
-        password = tk.Entry(login_frame, show="*")
-        password.pack()
+        tk.Label(login_frame, text="Password:", font=("Arial Bold", label_font_size), bg='#3498db', fg='white').pack(side="top")
+        password_entry = tk.Entry(login_frame, show="*", font=("Arial", entry_font_size))
+        password_entry.pack(pady=5)
 
-        btn_click = tk.Button(login_frame, text="Login", height=3, font=("Ariel Black", 15), width=10, command=lambda: Client.login_check(username, password, self))
-        btn_click.pack()
+        tk.Button(login_frame, text="Login", font=("Arial Bold", button_font_size), width=15, command=lambda: Client.login_check(username_entry, password_entry, self)).pack(pady=10)
 
-        register = tk.Button(login_frame, text="You don't have an account? Click here!", height=3, font=("Ariel Black", 15), width=40, command=lambda: RegisterFrame(self))
-        register.pack()
+        tk.Button(login_frame, text="You don't have an account? Click here!", font=("Arial", max(12, int(button_font_size * 0.7))), width=40, command=lambda: RegisterFrame(self)).pack()
 
         self.mainloop()
 
@@ -54,7 +51,7 @@ class RegisterFrame(tk.Frame):
         master.winfo_children()[0].destroy()
         self.pack()
 
-        lbl_num = tk.Label(self, text="User Name:", height=3, font=("Ariel Bold", 20))
+        lbl_num = tk.Label(self, text="Username:", height=3, font=("Ariel Bold", 20))
         lbl_num.pack(side="top")
 
         username = tk.Entry(self)
@@ -265,12 +262,59 @@ class TeacherFeedbacksFrame(tk.Frame):
             if self.clicked.get() == "":
                 messagebox.showerror("Error", "Please choose a student")
             else:
+                last_lesson = Client.last_lesson(self.clicked.get())
                 if not hasattr(last, 'label_created'):
-                    last_lesson = Client.last_lesson(self.clicked.get())
-                    lbl_num = tk.Label(self, text=f"The last lesson you entered is: {last_lesson}", height=3,
+                    self.lbl_num = tk.Label(self, text=f"The last lesson you entered is: {last_lesson}", height=3,
                                        font=("Ariel Bold", 20))
-                    lbl_num.pack(side="top")
+                    self.lbl_num.pack(side="top")
                     last.label_created = True
+
+                self.lbl_num.config(text=f"The last lesson you entered is: {last_lesson}")
+
+
+class StudentSharesWithFriendFrame(tk.Frame):
+    def __init__(self, master, student_username):
+
+        super().__init__(master)
+        master.winfo_children()[0].destroy()
+        self.pack()
+
+        disconnect_button(student_username, self)
+
+        lbl_num = tk.Label(self, text=f"Please choose the friend user name & lesson number you want to share with him"
+                        , height=3, font=("Ariel Bold", 20))
+        lbl_num.pack(side="top")
+
+        friend_username = tk.StringVar()
+        check = Client.friend_list()
+        type_option = tk.OptionMenu(self, friend_username, *check)
+        type_option.pack()
+
+        check = list(range(1, Client.how_much_lessons(student_username) + 1))
+        lesson_number = tk.StringVar()
+        type_option = tk.OptionMenu(self, lesson_number, *check)
+        type_option.pack()
+
+
+class FriendsFrame(tk.Frame):
+    def __init__(self, master, friend_username):
+
+        super().__init__(master)
+        master.winfo_children()[0].destroy()
+        self.pack()
+
+        disconnect_button(friend_username, self)
+
+        lbl_num = tk.Label(self, text=f"Welcome {friend_username}!"
+                                      f" Here is the information your friends decided to share with you:", height=3,
+                           font=("Ariel Bold", 20))
+        lbl_num.pack(side="top")
+
+        self.feedback_text = Text(width=80, height=100)
+        self.feedback_text.pack()
+        self.feedback_text.config(state="disabled")
+
+
 
 
 def disconnect_button(username, self_para):

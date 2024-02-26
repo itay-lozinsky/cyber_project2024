@@ -18,3 +18,5 @@ class Enum:
     ADD_LESSON = "add_lesson"
     HOW_MUCH_LESSONS = "how_much_lessons"
     FEEDBACKS_PER_LESSON = "feedbacks_per_lesson"
+    FRIEND_LIST = "friend_list"
+    SHARE_FEEDBACK_WITH_FRIEND = "share_feedback_with_friend"

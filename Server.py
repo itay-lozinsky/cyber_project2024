@@ -78,8 +78,7 @@ def handle_client(client_obj):
             client_obj.send(str(DBhandle.check_if_first_time_connected(teacher_username)).encode())
         elif data[0] == Objects.Enum.LAST_LESSON:
             student_username = data[1]
-            print(DBhandle.last_lesson(student_username))
-            client_obj.send("hey".encode())
+            client_obj.send(DBhandle.last_lesson(student_username).encode())
         elif data[0] == Objects.Enum.ADD_LESSON:
             student_username = data[1]
             teacher_username = data[2]
@@ -91,6 +90,17 @@ def handle_client(client_obj):
             student_username = data[1]
             lesson_number = data[2]
             client_obj.send(DBhandle.feedback_per_lesson(student_username, lesson_number).encode())
+        elif data[0] == Objects.Enum.FRIEND_LIST:
+            check = DBhandle.friends_list()
+            check = [e for e in connected_clients.keys() if e in check]
+            client_obj.send(pickle.dumps(check))
+        elif data[0] == Objects.Enum.SHARE_FEEDBACK_WITH_FRIEND:
+            lesson_number = data[1]
+            student_username = data[2]
+            friend_username = data[3]
+            connected_clients[friend_username].send(DBhandle.feedback_per_lesson(student_username, lesson_number).encode())
+
+
 
 def accept_clients():
     """
