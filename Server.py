@@ -1,6 +1,6 @@
 import socket
 import threading
-import HashMD5
+import Encryption
 import DBhandle
 import pickle
 import Objects
@@ -26,20 +26,17 @@ def handle_client(client_obj):
             username = data[1]
             password = data[2]
             user_type = data[3]
-            answer = DBhandle.create_user(username, HashMD5.hash(password), user_type)
+            answer = DBhandle.registration_process(username, Encryption.encrypted_password(password), user_type)
             if answer == user_type:
                 connected_clients[username] = client_obj
             client_obj.send(answer.encode())
         elif data[0] == Objects.Enum.CONNECTING:
             username = data[1]
             password = data[2]
-            answer = DBhandle.check_password(username, HashMD5.hash(password))
+            answer = DBhandle.login_process(username, Encryption.encrypted_password(password))
             if answer in ["Student", "Teacher", "Friend"]:
                 connected_clients[username] = client_obj
             client_obj.send(answer.encode())
-        elif data[0] == Objects.Enum.IS_JOINED:
-            student_username = data[1]
-            client_obj.send(str(DBhandle.is_joined(student_username)).encode())
         elif data[0] == Objects.Enum.YES:
             username = data[1]
             DBhandle.add_student("YES", username)
@@ -73,9 +70,12 @@ def handle_client(client_obj):
             verbal_feedback = data[3]
             quantitative_feedback = data[4]
             DBhandle.add_feedbacks(student_username, lesson_number, verbal_feedback, quantitative_feedback)
-        elif data[0] == Objects.Enum.CHECK_IF_FIRST_TIME_CONNECTED:
+        elif data[0] == Objects.Enum.STEP2:
             teacher_username = data[1]
-            client_obj.send(str(DBhandle.check_if_first_time_connected(teacher_username)).encode())
+            client_obj.send(str(DBhandle.step2(teacher_username)).encode())
+        elif data[0] == Objects.Enum.STEP1:
+            teacher_username = data[1]
+            client_obj.send(str(DBhandle.step1(teacher_username)).encode())
         elif data[0] == Objects.Enum.LAST_LESSON:
             student_username = data[1]
             client_obj.send(DBhandle.last_lesson(student_username).encode())
@@ -85,7 +85,7 @@ def handle_client(client_obj):
             DBhandle.add_lesson(student_username, teacher_username)
         elif data[0] == Objects.Enum.HOW_MUCH_LESSONS:
             student_username = data[1]
-            client_obj.send(pickle.dumps(DBhandle.how_much_lessons(student_username)))
+            client_obj.send((DBhandle.how_much_lessons(student_username)).encode())
         elif data[0] == Objects.Enum.FEEDBACKS_PER_LESSON:
             student_username = data[1]
             lesson_number = data[2]
@@ -98,7 +98,20 @@ def handle_client(client_obj):
             lesson_number = data[1]
             student_username = data[2]
             friend_username = data[3]
-            connected_clients[friend_username].send(DBhandle.feedback_per_lesson(student_username, lesson_number).encode())
+            connected_clients[friend_username].send(f"Feedback&{friend_username}&{student_username}"
+                                                    f"&{DBhandle.feedback_per_lesson(student_username, lesson_number)}".encode())
+        elif data[0] == Objects.Enum.REMOVE_STUDENT:
+            student_username = data[1]
+            DBhandle.remove_student(student_username)
+            if student_username in connected_clients.keys():
+                connected_clients[student_username].send("The Previous Frame".encode())
+        elif data[0] == Objects.Enum.HEY:
+            client_obj.send("HEY".encode())
+        elif data[0] == Objects.Enum.IF_REMOVED:
+            student_username = data[1]
+            answer = DBhandle.if_removed(student_username)
+            print(answer)
+            client_obj.send(pickle.dumps(answer))
 
 
 
