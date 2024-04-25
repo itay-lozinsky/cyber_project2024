@@ -1,11 +1,11 @@
 import time
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
-from tkinter import *
 import Client
 import threading
 from tkinter import ttk
 import WebScraping
+
 
 class BaseWindow(tk.Tk):
     def __init__(self, title, width=700, height=1000):
@@ -19,34 +19,35 @@ class LoginWindow(BaseWindow):
     def __init__(self):
         super().__init__("Driving Lessons System")
 
-        login_frame = tk.Frame(self, bg='#3498db')  # Set frame background color to blue
+        login_frame = ttk.Frame(self)
         login_frame.pack(padx=20, pady=20)
 
-        close_btn = tk.Button(login_frame, text="Close", height=3, font=("Arial Bold", 14), width=10,
-                              command=lambda: self.destroy(), fg='white', bg='#2c3e50', relief=tk.FLAT)
+        close_btn = ttk.Button(login_frame, text="Close", width=10,
+                               command=lambda: self.destroy())
         close_btn.pack(pady=10)
 
-        tk.Label(login_frame, text="Username:", font=("Arial Bold", 16), bg='#3498db',
-                 fg='white').pack(side="top")
-        username_entry = tk.Entry(login_frame, font=("Arial", 14))
+        username_label = ttk.Label(login_frame, text="Username:")
+        username_label.pack(side="top", pady=5)
+        username_entry = ttk.Entry(login_frame)
         username_entry.pack(side="top", pady=5)
 
-        tk.Label(login_frame, text="Password:", font=("Arial Bold", 16), bg='#3498db',
-                 fg='white').pack(side="top")
-        self.password_entry = tk.Entry(login_frame, show="*", font=("Arial", 14))
+        password_label = ttk.Label(login_frame, text="Password:")
+        password_label.pack(side="top", pady=5)
+        self.password_entry = ttk.Entry(login_frame, show="*")
         self.password_entry.pack(pady=5)
 
         self.show_password_var = tk.BooleanVar()
-        show_password_check = tk.Checkbutton(login_frame, text="Show Password", variable=self.show_password_var,
-                                             command=lambda: toggle_password(self))
+        show_password_check = ttk.Checkbutton(login_frame, text="Show Password", variable=self.show_password_var,
+                                              command=lambda: toggle_password(self))
         show_password_check.pack(side="top", pady=5)
 
-        tk.Button(login_frame, text="Login", font=("Arial Bold", 14), width=15,
-                  command=lambda: Client.login_check(username_entry, self.password_entry, self)).pack(pady=10)
+        login_btn = ttk.Button(login_frame, text="Login", width=15,
+                               command=lambda: Client.login_check(username_entry, self.password_entry, self))
+        login_btn.pack(pady=10)
 
-        tk.Button(login_frame, text="You don't have an account? Click here!",
-                  font=("Arial", max(12, int(14))), width=40,
-                  command=lambda: RegisterFrame(self)).pack()
+        register_btn = ttk.Button(login_frame, text="You don't have an account? Click here!",
+                                  command=lambda: RegisterFrame(self))
+        register_btn.pack()
 
         self.mainloop()
 
@@ -127,18 +128,18 @@ class JoiningStudentFrame(tk.Frame):
         btn_click.pack()
 
         if num == 0:
-            self.lbl_num = tk.Label(self, text=f"Welcome {student_username}! \n Do you want to hide your account "
+            self.lbl_num = tk.Label(self, text=f"Welcome {student_username[9:]}! \n Do you want to hide your account "
                                                f"while you are disconnected?", height=4, font=("Arial Bold", 20),
                                     fg='white', bg='#3498db', wraplength=600)
             self.lbl_num.pack(side="top")
 
             self.btn_click = tk.Button(self, text="YES", height=3, font=("Arial Bold", 15), width=10,
-                                       command=lambda: Client.add_to_clients_messages(master, True, student_username),
+                                       command=lambda: Client.add_clients_to_yes_or_no_table(master, True, student_username),
                                        fg='white', bg='#3498db')  # Set foreground and background color
             self.btn_click.pack()
 
             self.btn_click1 = tk.Button(self, text="NO", height=3, font=("Arial Bold", 15), width=10,
-                                        command=lambda: Client.add_to_clients_messages(master, False, student_username),
+                                        command=lambda: Client.add_clients_to_yes_or_no_table(master, False, student_username),
                                         fg='white', bg='#3498db')  # Set foreground and background color
             self.btn_click1.pack()
 
@@ -148,16 +149,16 @@ class JoiningStudentFrame(tk.Frame):
             lbl_num1.pack(pady=10)
 
         elif num == 1:
-            threading.Thread(target=Client.get_the_next_frame, args=(master, student_username, 0)).start()
+            threading.Thread(target=Client.get_the_next_frame, args=(master, student_username)).start()
 
-            lbl_num = tk.Label(self, text=f"Thanks {student_username}! \n Please wait until the teacher"
+            lbl_num = tk.Label(self, text=f"Thanks {student_username[9:]}! \n Please wait until the teacher"
                                           f" connects with you. \n"
                                           f" Meanwhile, if you chose NO, you can disconnect.", height=3,
                                font=("Arial Bold", 20), fg='white', bg='#3498db')
             lbl_num.pack(pady=30)
 
         elif num == 2:
-            get_the_feedback_thread = threading.Thread(target=Client.get_the_next_frame, args=(master, student_username, 0))
+            get_the_feedback_thread = threading.Thread(target=Client.get_the_next_frame, args=(master, student_username))
             if not get_the_feedback_thread.is_alive():
                 get_the_feedback_thread.start()
 
@@ -166,7 +167,7 @@ class JoiningStudentFrame(tk.Frame):
                                   bg='#3498db')  # Set foreground color to white, background color to blue
             btn_click.pack()
 
-            lbl_num = tk.Label(self, text=f"Thanks {student_username}! \n If you've completed your driving lessons, \n"
+            lbl_num = tk.Label(self, text=f"Thanks {student_username[9:]}! \n If you've completed your driving lessons, \n"
                                           f"Please disconnect. Otherwise, please wait until \n"
                                           f" another teacher connects with you.",
                                height=5, font=("Arial Bold", 20), fg='white', bg='#3498db', wraplength=800)
@@ -193,7 +194,7 @@ class TeacherOptionsFrame(tk.Frame):
                                 fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
         btn_refresh.pack(side="left", padx=10)  # Set side to "left" and add some padding
 
-        if Client.passed_step2_in_registration(teacher_username) == "True":
+        if Client.passed_stage_number2(teacher_username) == "True":
             btn_back = tk.Button(btn_frame, text="Back", height=3, font=("Arial Bold", 15), width=10,
                                  command=lambda: TeacherFeedbacksFrame(master, teacher_username),
                                  fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
@@ -207,7 +208,7 @@ class TeacherOptionsFrame(tk.Frame):
 
         if self.check:
 
-            lbl_num = tk.Label(text_frame, text=f"Welcome {teacher_username}! \n"
+            lbl_num = tk.Label(text_frame, text=f"Welcome {teacher_username[9:]}! \n"
                                                 f" Please choose your student:", height=3, font=("Arial Bold", 20),
                                                 fg='white', bg='#3498db')
             lbl_num.pack(side="top", pady=10)
@@ -223,90 +224,19 @@ class TeacherOptionsFrame(tk.Frame):
                 self.listbox.insert("end", option)
 
             enter_button = ttk.Button(self, text="Enter",
-                                      command=lambda: Client.teacher_chose_student(master, teacher_username, self.listbox.curselection(), self.listbox))
+                                      command=lambda: Client.teacher_connecting_student(master, teacher_username, self.listbox.curselection(), self.listbox))
             enter_button.pack(side="left", padx=10)
 
         else:
-            lbl_no_students = tk.Label(text_frame, text=f"Sorry {teacher_username} \n"
+            lbl_no_students = tk.Label(text_frame, text=f"Sorry {teacher_username[9:]} \n"
                                                         f" There are no students ready to connect right now! "
                                                         f"\n Please refresh or try again later.", height=3, font=("Arial Bold", 20),
                                        fg='white', bg='#3498db')
             lbl_no_students.pack(side="top", pady=10)
 
-class StudentFeedbacksFrame(tk.Frame):
-    def __init__(self, master, student_username, num):
-        super().__init__(master, bg='#3498db')  # Set frame background color to blue
-        master.winfo_children()[0].destroy()
-        self.pack(padx=50, pady=50)  # Increased padding for better spacing
-
-        if num == 1:
-            Client.ty()
-
-        time.sleep(2)
-
-        # Frame for Disconnect, Last Lesson, Share Friends, and Refresh buttons
-        btn_frame = tk.Frame(self, bg='#3498db')
-        btn_frame.pack(side="top", pady=20)
-
-        btn_last_lesson = tk.Button(btn_frame, text="Last Lesson", height=3, font=("Arial Bold", 15), width=10,
-                                    command=lambda: last_lesson_tool(student_username, self),
-                                    fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
-        btn_last_lesson.pack(side="left", padx=10)
-
-        btn_last_lesson = tk.Button(btn_frame, text="Instructions", height=3, font=("Arial Bold", 15), width=10,
-                                    command=lambda: InstructionsForStudents(master, student_username, 1),
-                                    fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
-        btn_last_lesson.pack(side="left", padx=10)
-
-        btn_share_friends = tk.Button(btn_frame, text="  Share \n Friends", height=3, font=("Arial Bold", 15), width=10,
-                                      command=lambda: StudentSharesWithFriendFrame(master, student_username),
-                                      fg='white', bg='#3498db')
-        btn_share_friends.pack(side="left", padx=10)
-
-        btn_disconnect = tk.Button(btn_frame, text="Disconnect", height=3, font=("Arial Bold", 15), width=10,
-                                   command=lambda: Client.logout_button(student_username, master),
-                                   fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
-        btn_disconnect.pack(side="left", padx=10)
-
-        btn_refresh = tk.Button(btn_frame, text="Refresh", height=3, font=("Arial Bold", 15), width=10,
-                                command=lambda: StudentFeedbacksFrame(master, student_username, 1),
-                                fg='white', bg='#3498db')
-        btn_refresh.pack(side="left", padx=10)
-
-        lbl_num = tk.Label(self, text=f"Hello {student_username}!"
-                                      f" Please choose the lesson \n number you want to get feedback on",
-                           height=3, font=("Arial Bold", 20), fg='white', bg='#3498db')
-        lbl_num.pack(side="top", pady=30)
-
-        check = list(range(1, Client.how_much_lessons(master, student_username) + 1))
-        self.chosen_lesson_number = tk.StringVar(self)
-        type_option = tk.OptionMenu(self, self.chosen_lesson_number, *check)
-        type_option.configure(font=("Arial", 14))  # Set font size for the option menu
-        type_option.pack(side="top", pady=10)
-
-        btn_enter = tk.Button(self, text="Enter", height=3, font=("Arial Bold", 15), width=10,
-                              command=lambda: self.enter_button(master, student_username), fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
-        btn_enter.pack(side="top", pady=10)
-
-        self.feedback_text = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=40, height=10)
-        self.feedback_text.pack(side="top", pady=10)
-        self.feedback_text.config(state="disabled")
-
-        remove_student_thread = threading.Thread(target=Client.get_the_previous_frame, args=(master, student_username))
-        remove_student_thread.start()
-
-    def enter_button(self, master, student_username):
-        Client.ty()
-        self.feedback_text.config(state="normal")
-        lesson_number = self.chosen_lesson_number.get()
-        feedback_text_content = Client.feedbacks_per_lesson(master, student_username, lesson_number)
-        threading.Thread(target=Client.get_the_previous_frame, args=(master, student_username)).start()
-        self.feedback_text.insert(tk.END, feedback_text_content)
-        self.feedback_text.config(state="disabled")
-
 
 class TeacherFeedbacksFrame(tk.Frame):
-    def variable_lesson_number(self, *args):
+    def variable_lesson_number(self):
         student_username = self.student_username.get()
         options = list(range(1, Client.how_much_lessons(self.master, student_username) + 1))
         self.lesson_number.set("")
@@ -352,7 +282,7 @@ class TeacherFeedbacksFrame(tk.Frame):
                                    fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
         btn_disconnect.pack(side="left", padx=10)
 
-        lbl_num = tk.Label(self, text=f"Hello {teacher_username}! \n "
+        lbl_num = tk.Label(self, text=f"Hello {teacher_username[9:]}! \n "
                                       f"Please choose your current student:", height=3, font=("Arial Bold", 20),
                            fg='white', bg='#3498db')
         lbl_num.pack(side="top", pady=10)
@@ -366,7 +296,8 @@ class TeacherFeedbacksFrame(tk.Frame):
             self.type_option = tk.OptionMenu(self, self.student_username, "")
             self.student_username.set("No Students Available")
             self.type_option.configure(state='disabled')
-            messagebox.showinfo("A message", "You don't have students right now. Please add at least one to the system.")
+            messagebox.showinfo("A message", "You don't have any students right now. \n"
+                                             " Please connect at least one to the system.")
 
         self.type_option.pack()
         self.student_username.trace_add("write", self.variable_lesson_number)
@@ -398,6 +329,78 @@ class TeacherFeedbacksFrame(tk.Frame):
         btn_enter.pack()
 
 
+class StudentFeedbacksFrame(tk.Frame):
+    def __init__(self, master, student_username, num):
+        super().__init__(master, bg='#3498db')  # Set frame background color to blue
+        master.winfo_children()[0].destroy()
+        self.pack(padx=50, pady=50)  # Increased padding for better spacing
+
+        if num == 1:
+            Client.stopping_the_removing_thread()
+
+        time.sleep(2)
+
+        # Frame for Disconnect, Last Lesson, Share Friends, and Refresh buttons
+        btn_frame = tk.Frame(self, bg='#3498db')
+        btn_frame.pack(side="top", pady=20)
+
+        btn_last_lesson = tk.Button(btn_frame, text="Last Lesson", height=3, font=("Arial Bold", 15), width=10,
+                                    command=lambda: last_lesson_tool(student_username, self),
+                                    fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
+        btn_last_lesson.pack(side="left", padx=10)
+
+        btn_last_lesson = tk.Button(btn_frame, text="Instructions", height=3, font=("Arial Bold", 15), width=10,
+                                    command=lambda: InstructionsForStudents(master, student_username, 1),
+                                    fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
+        btn_last_lesson.pack(side="left", padx=10)
+
+        btn_share_friends = tk.Button(btn_frame, text="  Share \n Friends", height=3, font=("Arial Bold", 15), width=10,
+                                      command=lambda: StudentSharesWithFriendFrame(master, student_username),
+                                      fg='white', bg='#3498db')
+        btn_share_friends.pack(side="left", padx=10)
+
+        btn_disconnect = tk.Button(btn_frame, text="Disconnect", height=3, font=("Arial Bold", 15), width=10,
+                                   command=lambda: Client.logout_button(student_username, master),
+                                   fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
+        btn_disconnect.pack(side="left", padx=10)
+
+        btn_refresh = tk.Button(btn_frame, text="Refresh", height=3, font=("Arial Bold", 15), width=10,
+                                command=lambda: StudentFeedbacksFrame(master, student_username, 1),
+                                fg='white', bg='#3498db')
+        btn_refresh.pack(side="left", padx=10)
+
+        lbl_num = tk.Label(self, text=f"Hello {student_username[9:]}!"
+                                      f" Please choose the lesson \n number you want to get feedback on",
+                           height=3, font=("Arial Bold", 20), fg='white', bg='#3498db')
+        lbl_num.pack(side="top", pady=30)
+
+        check = list(range(1, Client.how_much_lessons(master, student_username) + 1))
+        self.chosen_lesson_number = tk.StringVar(self)
+        type_option = tk.OptionMenu(self, self.chosen_lesson_number, *check)
+        type_option.configure(font=("Arial", 14))  # Set font size for the option menu
+        type_option.pack(side="top", pady=10)
+
+        btn_enter = tk.Button(self, text="Enter", height=3, font=("Arial Bold", 15), width=10,
+                              command=lambda: self.enter_button(master, student_username), fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
+        btn_enter.pack(side="top", pady=10)
+
+        self.feedback_text = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=40, height=10)
+        self.feedback_text.pack(side="top", pady=10)
+        self.feedback_text.config(state="disabled")
+
+        remove_student_thread = threading.Thread(target=Client.get_the_previous_frame, args=(master, student_username))
+        remove_student_thread.start()
+
+    def enter_button(self, master, student_username):
+        Client.stopping_the_removing_thread()
+        self.feedback_text.config(state="normal")
+        lesson_number = self.chosen_lesson_number.get()
+        feedback_text_content = Client.feedbacks_per_lesson(master, student_username, lesson_number)
+        threading.Thread(target=Client.get_the_previous_frame, args=(master, student_username)).start()
+        self.feedback_text.insert(tk.END, feedback_text_content)
+        self.feedback_text.config(state="disabled")
+
+
 class StudentSharesWithFriendFrame(tk.Frame):
     def __init__(self, master, student_username):
         super().__init__(master, bg='#3498db')  # Set frame background color to blue
@@ -422,7 +425,7 @@ class StudentSharesWithFriendFrame(tk.Frame):
                              fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
         btn_back.pack(side="left", padx=10)
 
-        Client.ty()
+        Client.stopping_the_removing_thread()
         self.check = Client.friends_list(master, student_username)
         threading.Thread(target=Client.get_the_previous_frame, args=(master, student_username)).start()
 
@@ -443,7 +446,7 @@ class StudentSharesWithFriendFrame(tk.Frame):
             for option in self.check:
                 self.listbox.insert("end", option)
 
-            Client.ty()
+            Client.stopping_the_removing_thread()
             check = list(range(1, Client.how_much_lessons(master, student_username) + 1))
             threading.Thread(target=Client.get_the_previous_frame, args=(master, student_username)).start()
             lesson_number = tk.StringVar()
@@ -475,7 +478,7 @@ class FriendsGetTheFeedbackFrame(tk.Frame):
                               bg='#3498db')  # Set foreground color to white, background color to blue
         btn_click.pack()
 
-        lbl_num = tk.Label(self, text=f"Welcome {friend_username}! \n"
+        lbl_num = tk.Label(self, text=f"Welcome {friend_username[9:]}! \n"
                                       f" Here is the information your friends decided \n to share with you:",
                                       height=5, font=("Arial Bold", 20), fg='white', bg='#3498db')
         lbl_num.pack(side="top", pady=10)
@@ -537,7 +540,7 @@ def toggle_password(self_para):
 
 
 # Function to filter the Listbox based on the search entry
-def filter_listbox(listbox, check, event=None):
+def filter_listbox(listbox, check):
     search_value = listbox.search_entry.get().lower()
     listbox.listbox.delete(0, "end")
     for option in check:
@@ -547,15 +550,15 @@ def filter_listbox(listbox, check, event=None):
 
 def last_lesson_tool(student_username, master):
     if student_username == "":
-        messagebox.showerror("Error", "Please choose a student")
+        messagebox.showerror("Error", "Please choose a student.")
     else:
-        last_lesson = Client.last_lesson(student_username)
+        last_lesson = Client.last_entered_lesson(student_username)
 
         if not hasattr(last_lesson_tool, 'frame_created'):
             frame = tk.Frame(master, bg='#3498db')
             frame.pack(padx=50, pady=50)
 
-            lbl_num = tk.Label(frame, text=f"The last lesson you entered is: {last_lesson}", height=3,
+            lbl_num = tk.Label(frame, text=last_lesson, height=3,
                                font=("Arial Bold", 20), fg='white', bg='#3498db')
             lbl_num.pack(side="top", pady=10)
 
