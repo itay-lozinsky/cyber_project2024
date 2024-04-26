@@ -5,10 +5,12 @@ import Client
 import threading
 from tkinter import ttk
 import WebScraping
+from Client import UserManagement, StudentManagement, TeacherManagement, FriendManagement
 
 
 class BaseWindow(tk.Tk):
     def __init__(self, title, width=700, height=1000):
+
         super().__init__()
         self.title(f'{title}')
         self.geometry(f'{width}x{height}')
@@ -42,7 +44,7 @@ class LoginWindow(BaseWindow):
         show_password_check.pack(side="top", pady=5)
 
         login_btn = ttk.Button(login_frame, text="Login", width=15,
-                               command=lambda: Client.login_check(username_entry, self.password_entry, self))
+                               command=lambda: Us.login_check(username_entry, self.password_entry, self))
         login_btn.pack(pady=10)
 
         register_btn = ttk.Button(login_frame, text="You don't have an account? Click here!",
@@ -134,12 +136,12 @@ class JoiningStudentFrame(tk.Frame):
             self.lbl_num.pack(side="top")
 
             self.btn_click = tk.Button(self, text="YES", height=3, font=("Arial Bold", 15), width=10,
-                                       command=lambda: Client.add_clients_to_yes_or_no_table(master, True, student_username),
+                                       command=lambda: Client.add_students_to_yes_or_no_table(master, True, student_username),
                                        fg='white', bg='#3498db')  # Set foreground and background color
             self.btn_click.pack()
 
             self.btn_click1 = tk.Button(self, text="NO", height=3, font=("Arial Bold", 15), width=10,
-                                        command=lambda: Client.add_clients_to_yes_or_no_table(master, False, student_username),
+                                        command=lambda: Client.add_students_to_yes_or_no_table(master, False, student_username),
                                         fg='white', bg='#3498db')  # Set foreground and background color
             self.btn_click1.pack()
 
