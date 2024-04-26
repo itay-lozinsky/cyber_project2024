@@ -74,9 +74,9 @@ def registration_check(username_entry, password_entry, type_entry, self_para):
     user_type = type_entry.get()
 
     if username == "" or password == "":
-        messagebox.showerror("Error", "You need to enter your details.")
+        messagebox.showerror("Error", "Please enter your details.")
     elif user_type == "":
-        messagebox.showerror("Error", "You need to choose your user type.")
+        messagebox.showerror("Error", "Please choose your user type.")
     elif len(username) < 12 or username[9] != "_" or not username[0:8].isdigit():
         messagebox.showerror("Error", "Invalid username format. Please use the correct format.")
     elif not is_fit_password(password):
@@ -115,7 +115,7 @@ def login_check(username_entry, password_entry, self_para):
     password = password_entry.get()
 
     if username == "" or password == "":
-        messagebox.showerror("Error", "You need to enter your details.")
+        messagebox.showerror("Error", "Please enter your details.")
 
     else:
         client_socket.send(f"{Enum.LOGINING}*{username}*{password}".encode())
@@ -220,7 +220,7 @@ def add_clients_to_yes_or_no_table(self_para, answer, student_username):
     Adds the student to the yes_or_no table, so that they can be included in the students list.
     Also navigates the student to the "JoiningStudentFrame" after the choice is made.
     """
-    warning = messagebox.askyesno("A Warning", "Are you sure? You can only choose one time")
+    warning = messagebox.askyesno("Warning", "Are you sure? You can only choose one time.")
     if warning:
         if answer:
             messagebox.showinfo("Success", "You successfully chose YES!")
@@ -255,7 +255,7 @@ def teacher_connecting_student(self_para, teacher_username, student_username_ent
     and navigates the teacher to the "TeacherFeedbacksFrame".
     """
     if not student_username_entry:
-        messagebox.showerror("Error", "You need to choose a student")
+        messagebox.showerror("Error", "Please choose a student.")
     student_username = listbox.get(student_username_entry[0])
     if student_username not in list_of_students():
         messagebox.showerror("Error", "This student is not on the options anymore. Please choose"
@@ -423,7 +423,7 @@ def last_entered_lesson(student_username):
     return client_socket.recv(1024).decode()
 
 
-def friends_list(self_para, student_username):
+def list_of_connected_friends(self_para, student_username):
     """
     :param self_para: The root object of Tkinter library.
     :param student_username: The username of the student who is being checked for removal.
@@ -457,7 +457,7 @@ def feedbacks_per_lesson(self_para, student_username, lesson_number):
     # In case, for some reason, the thread that has been activated on
     # "The Previous Frame" func, will cause socket collisions.
     if answer == "The Previous Frame":
-        handle_student_connection_status(self_para, student_username, 1) # option0-removed while being disconnected from the system.
+        handle_student_connection_status(self_para, student_username, 1)  # option0-removed while being disconnected from the system.
 
     else:
         return answer
@@ -483,7 +483,7 @@ def share_feedback_with_friend(self_para, lesson_number, student_username, frien
     friend_username = listbox.get(friend_username_entry[0])
     if lesson_number == "":
         messagebox.showerror("Error", "Please choose the lesson number.")
-    elif friend_username not in friends_list(self_para, student_username):
+    elif friend_username not in list_of_connected_friends(self_para, student_username):
         messagebox.showerror("Error", "Your friend is not connected anymore. Please choose"
                                       " another friend or try again later.")
     else:
@@ -520,11 +520,13 @@ def remove_student(self_para, teacher_username, student_username):
     if student_username == "":
         messagebox.showerror("Error", "Please choose a student")
     else:
-        answer = messagebox.askyesno("A Warning", "Are you sure you want to continue?")
+        answer = messagebox.askyesno("Warning", "Are you sure you want to continue?")
         if answer:
             messagebox.showinfo("Message", f"You have successfully removed {student_username}!")
             client_socket.send(f"{Enum.REMOVE_STUDENT}*{student_username}".encode())
+
             Windows.TeacherFeedbacksFrame(self_para, teacher_username)
+            # Refreshes the frame, so the student will be removed from the "students_per_teacher" list.
 
 
 def logout_button(username, self_para):

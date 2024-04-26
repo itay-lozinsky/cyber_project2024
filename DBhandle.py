@@ -54,14 +54,19 @@ class UsersDatabase(Database):
         :param user_type: The type of the new user trying to register.
         :return: The user type if registration is successful, otherwise an error message.
         """
-        self.cursor.execute(f'''SELECT * FROM Users WHERE username = '{username}' ''')
-        db_info = self.cursor.fetchone()
-        if db_info:
-            return "user already exists"
-        else:
-            self.cursor.execute(f'''INSERT INTO Users VALUES (?, ?, ?)''', (username, password, user_type))
-            self.conn.commit()
-            return user_type
+        try:
+            self.cursor.execute('SELECT * FROM Users WHERE username = ?', (username,))
+            db_info = self.cursor.fetchone()
+            if db_info:
+                return "user already exists"
+            else:
+                self.cursor.execute('INSERT INTO Users VALUES (?, ?, ?)', (username, password, user_type))
+                self.conn.commit()
+                return user_type
+
+        except sqlite3.Error as e:
+            print(f"Error registering user: {e}")
+            return "registration error"
 
     def login_process(self, username, password):
         """
@@ -71,51 +76,29 @@ class UsersDatabase(Database):
         :param password: The password of the user trying to log in.
         :return: The user type if login is successful, otherwise an error message.
         """
-        self.cursor.execute(f'''SELECT * FROM Users WHERE username = '{username}' ''')
-        db_info = self.cursor.fetchone()
-        if db_info:
-            if db_info[1] == password:
-                return db_info[2]  # Return user type if password is correct
-            else:
-                return "wrong password"
-        return "user doesn't exist"
+        try:
+            self.cursor.execute(f'''SELECT * FROM Users WHERE username = '{username}' ''')
+            db_info = self.cursor.fetchone()
+            if db_info:
+                if db_info[1] == password:
+                    return db_info[2]  # Return user type if password is correct
+                else:
+                    return "wrong password"
+            return "user doesn't exist"
+
+        except sqlite3.Error as e:
+            print(f"Error logining: {e}")
+            return "logining error"
 
     def friends_list(self):
         """
         :return: A list of all friend usernames, using the "Users" table.
+        (In the server, it will delete the disconnected friends from the list)
         """
         self.cursor.execute(f'''SELECT username FROM Users WHERE type == "Friend" ''')
         db_info = self.cursor.fetchall()
         db_info = [item for t in db_info for item in t]
         return db_info
-
-    def list_of_students(self, check):
-        """
-        :param check: 1 for getting the list of students who chose to hide their account while disconnected (Chose YES),
-                      2 for getting the list of all students who joined the system (Chose NO),
-                      3 for getting the list of all students who already connected with their teacher
-                      In the server, list 1 & list 2 will be united,
-                      and the students shown in list 3 will be removed from the united list.
-        :return: A list of usernames based on the specified check.
-        Note: Although this func retrieves data from number of tables,
-         it's under the "UsersDatabase" class, for convenience.
-        """
-        try:
-            db_info = []
-            if check == 1:
-                self.cursor.execute('''SELECT connected_usernames FROM Messages''')
-                db_info = self.cursor.fetchall()
-            elif check == 2:
-                self.cursor.execute('''SELECT usernames FROM Messages''')
-                db_info = self.cursor.fetchall()
-            elif check == 3:
-                self.cursor.execute('''SELECT student_username FROM Feedbacks WHERE removed = ?''', ('0',))
-                db_info = self.cursor.fetchall()
-            db_info = [item for t in db_info for item in t]
-            return db_info
-        except sqlite3.Error as e:
-            print(f"Error retrieving list of students: {e}")
-            return []
 
 
 class WaitingStudentsDatabase(Database):
@@ -131,6 +114,7 @@ class WaitingStudentsDatabase(Database):
         :param db_name: The name of the SQLite database.
         """
         super().__init__(db_name)
+        self.db_name = db_name
         self.create_table()
 
     def create_table(self):
@@ -169,12 +153,42 @@ class WaitingStudentsDatabase(Database):
         :return: "1" if the student is found, "0" otherwise.
         """
         self.cursor.execute(f'''SELECT * FROM Waiting_Students WHERE YES_username = '{student_username}'
-        OR usernames = '{student_username}' ''')
+        OR NO_username = '{student_username}' ''')
         db_info = self.cursor.fetchone()
         if db_info:
             return "1"
         else:
             return "0"
+
+    def list_of_students(self, check):
+        """
+        :param check: 1 for getting the list of students who chose to hide their account while disconnected (Chose YES),
+                      2 for getting the list of all students who joined the system (Chose NO),
+                      3 for getting the list of all students who already connected with their teacher
+                      In the server, list 1 & list 2 will be united,
+                      and the students shown in list 3 will be removed from the united list.
+        :return: A list of usernames based on the specified check.
+        Note: Although this func retrieves data from number of tables,
+         it's under the "WaitingStudentsDatabase" class, for convenience.
+        """
+        try:
+            db_info = []
+            if check == 1:
+                self.cursor.execute('''SELECT YES_username FROM Waiting_Students''')
+                db_info = self.cursor.fetchall()
+            elif check == 2:
+                self.cursor.execute('''SELECT NO_username FROM Waiting_Students''')
+                db_info = self.cursor.fetchall()
+            elif check == 3:
+                feedbacks_db = FeedbacksDatabase(self.db_name)  # Create an instance of FeedbacksDatabase
+                feedbacks_db.cursor.execute('''SELECT DISTINCT student_username FROM Feedbacks WHERE removed = 0''')
+                db_info = feedbacks_db.cursor.fetchall()
+
+            db_info = [item[0] for item in db_info]  # Extract usernames from tuples
+            return db_info
+        except sqlite3.Error as e:
+            print(f"Error retrieving list of students: {e}")
+            return []
 
 
 class FeedbacksDatabase(Database):
@@ -356,11 +370,11 @@ class FeedbacksDatabase(Database):
             teacher_username = teacher_username_tuple[0]
 
             if quantitative_feedback == "None":
-                return f"Teacher {teacher_username[9:]} didn't update feedback for lesson number {lesson_number} yet."
+                return f"Teacher {teacher_username[10:]} didn't update feedback for lesson number {lesson_number} yet."
             else:
                 verbal_feedback = ''.join(verbal_feedback)
                 quantitative_feedback = str(quantitative_feedback)
-                return f"Teacher {teacher_username[9:]}'s feedback for lesson number {lesson_number}: " \
+                return f"Teacher {teacher_username[10:]}'s feedback for lesson number {lesson_number}: " \
                        f"{verbal_feedback},{quantitative_feedback[1]}."
 
         except sqlite3.Error as e:

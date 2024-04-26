@@ -128,7 +128,7 @@ class JoiningStudentFrame(tk.Frame):
         btn_click.pack()
 
         if num == 0:
-            self.lbl_num = tk.Label(self, text=f"Welcome {student_username[9:]}! \n Do you want to hide your account "
+            self.lbl_num = tk.Label(self, text=f"Welcome {student_username[10:]}! \n Do you want to hide your account "
                                                f"while you are disconnected?", height=4, font=("Arial Bold", 20),
                                     fg='white', bg='#3498db', wraplength=600)
             self.lbl_num.pack(side="top")
@@ -151,7 +151,7 @@ class JoiningStudentFrame(tk.Frame):
         elif num == 1:
             threading.Thread(target=Client.get_the_next_frame, args=(master, student_username)).start()
 
-            lbl_num = tk.Label(self, text=f"Thanks {student_username[9:]}! \n Please wait until the teacher"
+            lbl_num = tk.Label(self, text=f"Thanks {student_username[10:]}! \n Please wait until the teacher"
                                           f" connects with you. \n"
                                           f" Meanwhile, if you chose NO, you can disconnect.", height=3,
                                font=("Arial Bold", 20), fg='white', bg='#3498db')
@@ -167,7 +167,7 @@ class JoiningStudentFrame(tk.Frame):
                                   bg='#3498db')  # Set foreground color to white, background color to blue
             btn_click.pack()
 
-            lbl_num = tk.Label(self, text=f"Thanks {student_username[9:]}! \n If you've completed your driving lessons, \n"
+            lbl_num = tk.Label(self, text=f"Thanks {student_username[10:]}! \n If you've completed your driving lessons, \n"
                                           f"Please disconnect. Otherwise, please wait until \n"
                                           f" another teacher connects with you.",
                                height=5, font=("Arial Bold", 20), fg='white', bg='#3498db', wraplength=800)
@@ -208,7 +208,7 @@ class TeacherOptionsFrame(tk.Frame):
 
         if self.check:
 
-            lbl_num = tk.Label(text_frame, text=f"Welcome {teacher_username[9:]}! \n"
+            lbl_num = tk.Label(text_frame, text=f"Welcome {teacher_username[10:]}! \n"
                                                 f" Please choose your student:", height=3, font=("Arial Bold", 20),
                                                 fg='white', bg='#3498db')
             lbl_num.pack(side="top", pady=10)
@@ -228,7 +228,7 @@ class TeacherOptionsFrame(tk.Frame):
             enter_button.pack(side="left", padx=10)
 
         else:
-            lbl_no_students = tk.Label(text_frame, text=f"Sorry {teacher_username[9:]} \n"
+            lbl_no_students = tk.Label(text_frame, text=f"Sorry {teacher_username[10:]} \n"
                                                         f" There are no students ready to connect right now! "
                                                         f"\n Please refresh or try again later.", height=3, font=("Arial Bold", 20),
                                        fg='white', bg='#3498db')
@@ -282,7 +282,7 @@ class TeacherFeedbacksFrame(tk.Frame):
                                    fg='white', bg='#3498db')  # Set foreground color to white, background color to blue
         btn_disconnect.pack(side="left", padx=10)
 
-        lbl_num = tk.Label(self, text=f"Hello {teacher_username[9:]}! \n "
+        lbl_num = tk.Label(self, text=f"Hello {teacher_username[10:]}! \n "
                                       f"Please choose your current student:", height=3, font=("Arial Bold", 20),
                            fg='white', bg='#3498db')
         lbl_num.pack(side="top", pady=10)
@@ -369,7 +369,7 @@ class StudentFeedbacksFrame(tk.Frame):
                                 fg='white', bg='#3498db')
         btn_refresh.pack(side="left", padx=10)
 
-        lbl_num = tk.Label(self, text=f"Hello {student_username[9:]}!"
+        lbl_num = tk.Label(self, text=f"Hello {student_username[10:]}!"
                                       f" Please choose the lesson \n number you want to get feedback on",
                            height=3, font=("Arial Bold", 20), fg='white', bg='#3498db')
         lbl_num.pack(side="top", pady=30)
@@ -426,7 +426,7 @@ class StudentSharesWithFriendFrame(tk.Frame):
         btn_back.pack(side="left", padx=10)
 
         Client.stopping_the_removing_thread()
-        self.check = Client.friends_list(master, student_username)
+        self.check = Client.list_of_connected_friends(master, student_username)
         threading.Thread(target=Client.get_the_previous_frame, args=(master, student_username)).start()
 
         if self.check:
@@ -478,7 +478,7 @@ class FriendsGetTheFeedbackFrame(tk.Frame):
                               bg='#3498db')  # Set foreground color to white, background color to blue
         btn_click.pack()
 
-        lbl_num = tk.Label(self, text=f"Welcome {friend_username[9:]}! \n"
+        lbl_num = tk.Label(self, text=f"Welcome {friend_username[10:]}! \n"
                                       f" Here is the information your friends decided \n to share with you:",
                                       height=5, font=("Arial Bold", 20), fg='white', bg='#3498db')
         lbl_num.pack(side="top", pady=10)

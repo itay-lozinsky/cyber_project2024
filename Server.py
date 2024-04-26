@@ -5,7 +5,6 @@ import Objects
 import socket
 import pickle
 
-
 # Create instances of the UsersDatabase, FeedbacksDatabase, and WaitingStudentsDatabase classes,
 # connecting them to their respective SQLite databases.
 users_db = UsersDatabase('Users.db')
@@ -56,21 +55,10 @@ def handle_client(client_obj):
                 connected_users[username] = client_obj  # If valid, adds the users to the dictionary
             client_obj.send(answer.encode())
 
-        elif data[0] == Objects.Enum.FRIEND_LIST:
+        elif data[0] == Objects.Enum.CONNECTED_FRIENDS_LIST:
             answer = users_db.friends_list()
             answer = [e for e in connected_users.keys() if e in answer]  # Removes all the disconnect friends
             client_obj.send(pickle.dumps(answer))
-
-        elif data[0] == Objects.Enum.STUDENT_LIST:
-            list1 = users_db.list_of_students(1)  # List of students who chose "YES"
-            list2 = users_db.list_of_students(2)  # List of students who chose "NO"
-            list3 = users_db.list_of_students(3)  # List of students already connected by their teacher
-            upgraded_list1 = [e for e in connected_users.keys() if e in list1]
-            # Removes "YES" students currently disconnected
-            untied_list = upgraded_list1 + list2  # Combine "YES" and connected students with all "NO" students
-            final_list = [e for e in untied_list if
-                          e not in list3 and e is not None]  # Remove students already connected by their teacher
-            client_obj.send(pickle.dumps(final_list))
 
         # WaitingStudents Table
 
@@ -85,6 +73,17 @@ def handle_client(client_obj):
             student_username = data[1]
             answer = waiting_students_db.stage_number1(student_username)
             client_obj.send(answer.encode())
+
+        elif data[0] == Objects.Enum.STUDENT_LIST:
+            list1 = waiting_students_db.list_of_students(1)  # List of students who chose "YES"
+            list2 = waiting_students_db.list_of_students(2)  # List of students who chose "NO"
+            list3 = waiting_students_db.list_of_students(3)  # List of students already connected by their teacher
+            upgraded_list1 = [e for e in connected_users.keys() if e in list1]
+            # Removes "YES" students currently disconnected
+            untied_list = upgraded_list1 + list2  # Combine "YES" and connected students with all "NO" students
+            final_list = [e for e in untied_list if
+                          e not in list3 and e is not None]  # Remove students already connected by their teacher
+            client_obj.send(pickle.dumps(final_list))
 
         # Feedbacks Table
 
