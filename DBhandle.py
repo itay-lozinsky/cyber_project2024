@@ -152,8 +152,7 @@ class WaitingStudentsDatabase(Database):
         :param student_username: The username of the student being checked.
         :return: "1" if the student is found, "0" otherwise.
         """
-        self.cursor.execute(f'''SELECT * FROM Waiting_Students WHERE YES_username = '{student_username}'
-        OR NO_username = '{student_username}' ''')
+        self.cursor.execute('''SELECT * FROM Waiting_Students WHERE YES_username = ? OR NO_username = ?''', (student_username, student_username))
         db_info = self.cursor.fetchone()
         if db_info:
             return "1"
@@ -180,7 +179,6 @@ class WaitingStudentsDatabase(Database):
                 self.cursor.execute('''SELECT NO_username FROM Waiting_Students''')
                 db_info = self.cursor.fetchall()
             elif check == 3:
-                feedbacks_db = FeedbacksDatabase(self.db_name)  # Create an instance of FeedbacksDatabase
                 feedbacks_db.cursor.execute('''SELECT DISTINCT student_username FROM Feedbacks WHERE removed = 0''')
                 db_info = feedbacks_db.cursor.fetchall()
 
@@ -339,43 +337,39 @@ class FeedbacksDatabase(Database):
         self.conn.commit()
 
     def feedback_per_lesson(self, student_username, lesson_number):
-        """
-        Retrieves the feedback for a specific lesson of a student.
-
-        :param student_username: The username of the student.
-        :param lesson_number: The lesson number.
-        :return: A string containing the feedback data (includes verbal & quantitative feedback,
-                 lesson number, and teacher username).
-        """
         try:
             # Retrieve verbal feedback
             self.cursor.execute('''SELECT verbal_feedback FROM Feedbacks 
                                     WHERE student_username = ? AND lesson_number = ?''',
                                 (student_username, lesson_number))
             verbal_feedback = self.cursor.fetchone()
-            verbal_feedback = verbal_feedback[0]
+            if verbal_feedback:
+                verbal_feedback = verbal_feedback[0]
+            else:
+                verbal_feedback = "No verbal feedback provided."
 
             # Retrieve quantitative feedback
             self.cursor.execute('''SELECT quantitative_feedback FROM Feedbacks 
                                     WHERE student_username = ? AND lesson_number = ?''',
                                 (student_username, lesson_number))
             quantitative_feedback = self.cursor.fetchone()
-            quantitative_feedback = quantitative_feedback[0]
+            if quantitative_feedback:
+                quantitative_feedback = str(quantitative_feedback[0])
+            else:
+                quantitative_feedback = "No quantitative feedback provided."
 
             # Retrieve teacher username
             self.cursor.execute('''SELECT teacher_username FROM Feedbacks 
-                                    WHERE student_username = ?''',
-                                (student_username,))
+                                    WHERE student_username = ? AND lesson_number = ?''',
+                                (student_username, lesson_number))
             teacher_username_tuple = self.cursor.fetchone()
-            teacher_username = teacher_username_tuple[0]
-
-            if quantitative_feedback == "None":
-                return f"Teacher {teacher_username[10:]} didn't update feedback for lesson number {lesson_number} yet."
+            if teacher_username_tuple:
+                teacher_username = teacher_username_tuple[0]
             else:
-                verbal_feedback = ''.join(verbal_feedback)
-                quantitative_feedback = str(quantitative_feedback)
-                return f"Teacher {teacher_username[10:]}'s feedback for lesson number {lesson_number}: " \
-                       f"{verbal_feedback},{quantitative_feedback[1]}."
+                teacher_username = "Unknown"
+
+            return f"Teacher {teacher_username[10:]}'s feedback for lesson number {lesson_number}: " \
+                   f"{verbal_feedback}, {quantitative_feedback}."
 
         except sqlite3.Error as e:
             print(f"Error retrieving feedback: {e}")
@@ -406,5 +400,14 @@ class FeedbacksDatabase(Database):
             self.cursor.execute('''DELETE FROM Feedbacks WHERE student_username = ? AND removed = ?''',
                                 (student_username, True))
             self.conn.commit()
+            return db_info
 
-        return db_info if db_info else ["False"]
+        else:
+            return ["False"]
+
+
+# Create instances of the UsersDatabase, FeedbacksDatabase, and WaitingStudentsDatabase classes,
+# connecting them to their respective SQLite databases.
+users_db = UsersDatabase('Users.db')
+feedbacks_db = FeedbacksDatabase('Feedbacks.db')
+waiting_students_db = WaitingStudentsDatabase('Waiting_Students.db')

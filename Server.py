@@ -1,15 +1,9 @@
-from DBhandle import UsersDatabase, FeedbacksDatabase, WaitingStudentsDatabase
+from DBhandle import users_db, feedbacks_db, waiting_students_db
 import Encryption
 import threading
 import Objects
 import socket
 import pickle
-
-# Create instances of the UsersDatabase, FeedbacksDatabase, and WaitingStudentsDatabase classes,
-# connecting them to their respective SQLite databases.
-users_db = UsersDatabase('Users.db')
-feedbacks_db = FeedbacksDatabase('Feedbacks.db')
-waiting_students_db = WaitingStudentsDatabase('Waiting_Students.db')
 
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object using IPv4 and TCP protocol
@@ -102,7 +96,7 @@ def handle_client(client_obj):
 
         elif data[0] == Objects.Enum.LIST_STUDENTS_PER_TEACHER:
             teacher_username = data[1]
-            answer = pickle.dumps(feedbacks_db.list_of_students_per_teacher(teacher_username))
+            answer = feedbacks_db.list_of_students_per_teacher(teacher_username)
             client_obj.send(pickle.dumps(answer))
 
         elif data[0] == Objects.Enum.HOW_MUCH_LESSONS:
@@ -140,7 +134,7 @@ def handle_client(client_obj):
             feedback_data = feedbacks_db.feedback_per_lesson(student_username, lesson_number)
             message = f"Feedback%{friend_username}%{student_username}%{feedback_data}".encode()  # Split with "%"
             connected_users[friend_username].send(message)
-            # The thread activated on "friend_gets_feedback" func will get this message and shows friend the feedback
+            # The thread activated on "friend_gets_feedback" func will get this message and show the friend the feedback
 
         elif data[0] == Objects.Enum.REMOVE_STUDENT:
             student_username = data[1]
@@ -149,14 +143,14 @@ def handle_client(client_obj):
             if student_username in connected_users.keys():  # If the student is connected, they are immediately removed
                 connected_users[student_username].send("The Previous Frame".encode())
 
-        elif data[0] == Objects.Enum.STOP_THE_THREAD:
-            client_obj.send("STOP THE THREAD".encode())
-
         elif data[0] == Objects.Enum.IF_REMOVED:
             student_username = data[1]
             answer = feedbacks_db.if_removed(student_username)
         # Checks if the student has been removed and, if so, returns their feedback data
             client_obj.send(pickle.dumps(answer))
+
+        elif data[0] == Objects.Enum.STOP_THE_THREAD:
+            client_obj.send("STOP THE THREAD".encode())
 
         elif data[0] == Objects.Enum.LOGOUT:
             username = data[1]
